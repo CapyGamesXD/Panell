@@ -12,7 +12,6 @@ import 'darkTheme.dart';
 import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:get_storage/get_storage.dart';
 import 'tutorial.dart';
-import 'APIKey.dart';
 
 double celsius = 0.0;
 String cityName = "";
@@ -23,8 +22,6 @@ String errText = 'Please enter a valid city name in settings.';
 
 final TextEditingController textController = TextEditingController();
 final now = DateTime.now();
-final formattedDate = DateFormat.yMMMMd().format(now);
-final formattedTime = DateFormat('jm').format(now);
 
 void main() async {
   await GetStorage.init();
@@ -64,16 +61,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Timer? weatherTimer;
+  Timer? clockTimer;
+  final formattedDate = '';
+  final formattedTime = '';
+
   var celsius = 0.0;
   String precip = "Fetching Weather";
   var humidity = 0.0;
   var weatherID = 0;
 
-  Timer? weatherTimer;
-  Timer? clockTimer;
-
   void fetchWeather() async {
-    final apiKey = apiKEY;
+    final apiKey = api_Key;
     final apiUrl = Uri.parse(
       'https://corsproxy.io/?url=https://api.openweathermap.org/data/2.5/weather?q=$cityName&appid=$apiKey',
     );
@@ -125,6 +124,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  String _currentTime = DateFormat('jm').format(DateTime.now());
+
   @override
   void initState() {
     super.initState();
@@ -135,9 +136,21 @@ class _HomePageState extends State<HomePage> {
       setState(() {});
     });
 
-    clockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {});
-    });
+    void startTimer() {
+      clockTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+        setState(() {
+          _currentTime = DateFormat('jm').format(DateTime.now());
+        });
+      });
+    }
+
+    @override
+    void dispose() {
+      clockTimer?.cancel();
+      super.dispose();
+    }
+
+    startTimer();
   }
 
   @override
@@ -288,7 +301,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: Center(
                         child: Text(
-                          formattedTime,
+                          _currentTime,
                           style: GoogleFonts.quicksand(
                             color: Color.fromARGB(255, 255, 255, 255),
                             fontSize: 70 * scaleFactor,
@@ -345,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: Center(
                         child: Text(
-                          formattedDate,
+                          DateFormat.yMMMMd().format(DateTime.now()),
                           style: GoogleFonts.quicksand(
                             color: Color.fromARGB(255, 255, 255, 255),
                             fontSize: 70 * scaleFactor,
@@ -532,5 +545,3 @@ class _settingsPageState extends State<settingsPage> {
     );
   }
 }
-
-//Fix the time. :)

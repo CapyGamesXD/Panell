@@ -1,1 +1,2 @@
-lib/API/APIKey.dart
+# Hide key from version control
+APIKey.dart
